@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1017521812337",
+    "firebase_url": "https://student-records-1e32b.firebaseio.com",
+    "project_id": "student-records-1e32b",
+    "storage_bucket": "student-records-1e32b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1017521812337:android:573133638538fd0a02fcd0",
+        "android_client_info": {
+          "package_name": "com.appsol360.student_data"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1017521812337-og37ip6ae68j2eato6061tqcj6l69cnv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCS-4wD37lKqmRt5KVnzIioPghZdDHr1Uk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1017521812337-og37ip6ae68j2eato6061tqcj6l69cnv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
