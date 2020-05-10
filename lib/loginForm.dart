@@ -1,11 +1,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:community_material_icon/community_material_icon.dart';
+import 'package:student_data/home_page.dart';
 import 'recoverpage.dart';
 import 'registerForm.dart';
+import 'service.dart';
 import 'package:flutter_responsive/flutter_responsive.dart';
 
-
+import 'package:progress_dialog/progress_dialog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 class Form1 extends StatefulWidget {
   @override
   _ComingSoonPageState createState() => _ComingSoonPageState();
@@ -25,6 +28,7 @@ class _ComingSoonPageState extends State<Form1> {
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
+
                   // Navbar(  ),
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -59,7 +63,10 @@ class _ComingSoonPageState extends State<Form1> {
 }
 
 class LoginPage extends StatefulWidget {
+  LoginPage({this.auth, this.loginCallback});
 
+  final BaseAuth auth;
+  final VoidCallback loginCallback;
 
   @override
   _LandingPageState createState() => _LandingPageState();
@@ -69,71 +76,94 @@ class LoginPage extends StatefulWidget {
 class _LandingPageState extends State<LoginPage > {
   final emailTextControler = TextEditingController();
   final scaffoldKey = new GlobalKey<ScaffoldState>();
-  final formKey = new GlobalKey<FormState>();
+  final _formKey = new GlobalKey<FormState>();
 
   int state = 0;
   String emailText;
   String _password;
-
-  var result;
-
-  bool _isAddingEmail = false;
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-  }
-
-  void _submit() {
-
-    setState(() {
-      _isAddingEmail = true;
-
-    });
-    if (_isAddingEmail == true){
-      setState(() {
-
-      });
-      CircularProgressIndicator(
-        value: 90,
-      );
-      AlertDialog(
-        title:  Text("Email Save Successfully"),
-      );
-      var result = print('Email saved');
-    }
-    else{
-      var result = print('Email not Save');
-    }
+  String _errorMessage;
+  bool _isLoginForm;
+  bool _isLoading;
 
 
-    final form = formKey.currentState;
-    emailTextControler.clear();
 
-
-    setState(() {
-      _isAddingEmail = false;
-    });
-
+  bool validateAndSave() {
+    final form = _formKey.currentState;
     if (form.validate()) {
       form.save();
 
-
+      return true;
     }
 
-
-    //print('Email Save');
+    return false;
   }
 
+  void validateAndSubmit() async {
+    setState(() {
+      _errorMessage = "";
+      _isLoading = true;
+    });
+    if (validateAndSave()) {
+      String userId = "";
+      try {
+        if (_isLoginForm) {
+          userId = await widget.auth.signIn(emailText, _password);
+          print('Signed in: $userId');
+        }
+        else {
+          userId = await widget.auth.signUp(emailText, _password);
+
+          print('Signed up user: $userId');
+        }
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (userId.length > 0 && userId != null && _isLoginForm) {
+          widget.loginCallback();
+        }
+      } catch (e) {
+        print('Error: $e');
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.message;
+          _formKey.currentState.reset();
+        });
+      }
+    }
+  }
+
+//  @override
+//  void initState() {
+//    // TODO: implement initState
+//    super.initState();
+//  }
+//
+//  @override
+//  void dispose() {
+//    // TODO: implement dispose
+//    super.dispose();
+//  }
+
+
+
+  Widget showErrorMessage() {
+    if (_errorMessage.length > 0 && _errorMessage != null) {
+
+      print(_errorMessage);
+    } else {
+      return new Container(
+        height: 0.0,
+      );
+    }
+  }
+
+
+
   List<Widget> pageChildren(double width) {
+
     return <Widget>[
+
       Card(
         color: Colors.white,
         child: Container(
@@ -172,13 +202,14 @@ class _LandingPageState extends State<LoginPage > {
                           "Sign into your account",
                           style: TextStyle(fontSize: 22.0, color: Colors.grey),
                         ),
+
                       ],
                     ),
                   ),
 
                   Container(
                     child: new Form(
-                      key: formKey,
+                      key: _formKey,
                       child: new Column(
                         children: <Widget>[
 //                      new TextFormField(
@@ -209,7 +240,8 @@ class _LandingPageState extends State<LoginPage > {
                               return null;
                             },
                             onChanged: (value) {
-                              emailText = value;
+                              emailText = value.trim();
+
                             },
                             // validator: (val) =>
                             //  !val.contains('@') ? 'Invalid Email' : Text("Email Saved"),
@@ -234,16 +266,20 @@ class _LandingPageState extends State<LoginPage > {
 
                           SizedBox(height: 20,),
                           new TextFormField(
-
+                            obscureText: true,
+                            autofocus: false,
                             validator: (value) {
                               if (value.isEmpty) {
                                 return 'Please enter Pasword';
                               }
-
+                              else if(value.length <8){
+                                return 'Password must be more than 8 characters';
+                              }
                               return null;
                             },
                             onChanged: (value) {
-                              emailText = value;
+                              _password = value.trim();
+
                             },
                             // validator: (val) =>
                             //  !val.contains('@') ? 'Invalid Email' : Text("Email Saved"),
@@ -275,10 +311,7 @@ class _LandingPageState extends State<LoginPage > {
                                 shape: RoundedRectangleBorder(
                                     borderRadius:
                                     BorderRadius.all(Radius.circular(20.0))),
-                                onPressed: (){
-                                 _submit();
-                                },
-
+                                onPressed: validateAndSubmit,
 
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
@@ -422,67 +455,67 @@ radius: 19,
                                     ),
                                   ],
                                 ),
-                                SizedBox(width: 3,),
-                                Column(
-                                  children: <Widget>[
-                                    Stack(
-                                      children: <Widget>[
-
-                                        MaterialButton(
-                                          minWidth: 25,
-                                          color: Colors.blueAccent,
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                              BorderRadius.all(Radius.circular(20.0))),
-                                          onPressed: (){
-
-                                          },
-                                          child: ClipOval(
-
-                                            child: Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 12.0, horizontal: 8.0),
-
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(left: 20,right: 10),
-                                                child: Text(
-                                                  "Twitter",
-                                                  style: TextStyle(color: Colors.white,fontSize: 12),
-                                                ),
-                                              ),
-                                            ),
-
-                                          ),
-
-                                        ),
-                                        Positioned(
-                                          top: 5,
-                                          child: CircleAvatar(
-                                            radius: 19,
-
-                                            backgroundColor: Colors.blue,
-                                            child: ClipOval(
-                                              child: Container(
-
-                                                child:
-                                              IconButton(
-                                                onPressed: () {},
-                                                icon: Icon(
-                                                  CommunityMaterialIcons.twitter, color: Colors.white,), iconSize: 20,
-                                                tooltip: 'Twitter',
-                                              ),),
-
-                                            ),
-
-                                          ),
-                                        ),
-
-
-
-                                      ],
-                                    ),
-                                  ],
-                                ),
+//                                SizedBox(width: 3,),
+//                                Column(
+//                                  children: <Widget>[
+//                                    Stack(
+//                                      children: <Widget>[
+//
+//                                        MaterialButton(
+//                                          minWidth: 25,
+//                                          color: Colors.blueAccent,
+//                                          shape: RoundedRectangleBorder(
+//                                              borderRadius:
+//                                              BorderRadius.all(Radius.circular(20.0))),
+//                                          onPressed: (){
+//
+//                                          },
+//                                          child: ClipOval(
+//
+//                                            child: Padding(
+//                                              padding: const EdgeInsets.symmetric(
+//                                                  vertical: 12.0, horizontal: 8.0),
+//
+//                                              child: Padding(
+//                                                padding: const EdgeInsets.only(left: 20,right: 10),
+//                                                child: Text(
+//                                                  "Twitter",
+//                                                  style: TextStyle(color: Colors.white,fontSize: 12),
+//                                                ),
+//                                              ),
+//                                            ),
+//
+//                                          ),
+//
+//                                        ),
+//                                        Positioned(
+//                                          top: 5,
+//                                          child: CircleAvatar(
+//                                            radius: 19,
+//
+//                                            backgroundColor: Colors.blue,
+//                                            child: ClipOval(
+//                                              child: Container(
+//
+//                                                child:
+//                                              IconButton(
+//                                                onPressed: () {},
+//                                                icon: Icon(
+//                                                  CommunityMaterialIcons.twitter, color: Colors.white,), iconSize: 20,
+//                                                tooltip: 'Twitter',
+//                                              ),),
+//
+//                                            ),
+//
+//                                          ),
+//                                        ),
+//
+//
+//
+//                                      ],
+//                                    ),
+//                                  ],
+//                                ),
                                 SizedBox(width: 3,),
                                 Column(
                                   children: <Widget>[
@@ -496,7 +529,9 @@ radius: 19,
                                               borderRadius:
                                               BorderRadius.all(Radius.circular(20.0))),
                                           onPressed: (){
-
+Navigator.push(context, MaterialPageRoute(builder: (context){
+  return HomePage();
+}));
                                           },
                                           child: ClipOval(
 
@@ -613,7 +648,10 @@ radius: 19,
 
 class LoginPageMobile extends StatefulWidget {
 
+  LoginPageMobile ({this.auth, this.loginCallback});
 
+  final BaseAuth auth;
+  final VoidCallback loginCallback;
   @override
   _LandingPageState1 createState() => _LandingPageState1();
 
@@ -622,69 +660,87 @@ class LoginPageMobile extends StatefulWidget {
 class _LandingPageState1 extends State<LoginPageMobile > {
   final emailTextControler = TextEditingController();
   final scaffoldKey = new GlobalKey<ScaffoldState>();
-  final formKey = new GlobalKey<FormState>();
+  final _formKey = new GlobalKey<FormState>();
 
   int state = 0;
   String emailText;
   String _password;
-
-  var result;
-
-  bool _isAddingEmail = false;
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-  }
-
-  void _submit() {
-
-    setState(() {
-      _isAddingEmail = true;
-
-    });
-    if (_isAddingEmail == true){
-      setState(() {
-
-      });
-      CircularProgressIndicator(
-        value: 90,
-      );
-      AlertDialog(
-        title:  Text("Email Save Successfully"),
-      );
-      var result = print('Email saved');
-    }
-    else{
-      var result = print('Email not Save');
-    }
+  String _errorMessage;
+  bool _isLoginForm;
+  bool _isLoading;
 
 
-    final form = formKey.currentState;
-    emailTextControler.clear();
 
-
-    setState(() {
-      _isAddingEmail = false;
-    });
-
+  bool validateAndSave() {
+    final form = _formKey.currentState;
     if (form.validate()) {
       form.save();
 
-
+      return true;
     }
 
-
-    //print('Email Save');
+    return false;
   }
 
+  void validateAndSubmit() async {
+    setState(() {
+      _errorMessage = "";
+      _isLoading = true;
+    });
+    if (validateAndSave()) {
+      String userId = "";
+      try {
+        if (_isLoginForm) {
+          userId = await widget.auth.signIn(emailText, _password);
+          print('Signed in: $userId');
+        }
+        else {
+          userId = await widget.auth.signUp(emailText, _password);
+
+          print('Signed up user: $userId');
+        }
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (userId.length > 0 && userId != null && _isLoginForm) {
+          widget.loginCallback();
+        }
+      } catch (e) {
+        print('Error: $e');
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.message;
+          _formKey.currentState.reset();
+        });
+      }
+    }
+  }
+
+//  @override
+//  void initState() {
+//    // TODO: implement initState
+//    super.initState();
+//  }
+//
+//  @override
+//  void dispose() {
+//    // TODO: implement dispose
+//    super.dispose();
+//  }
+
+
+
+  Widget showErrorMessage() {
+    if (_errorMessage.length > 0 && _errorMessage != null) {
+
+      print(_errorMessage);
+    } else {
+      return new Container(
+        height: 0.0,
+      );
+    }
+  }
   List<Widget> pageChildren(double width) {
     return <Widget>[
       Card(
@@ -731,7 +787,7 @@ class _LandingPageState1 extends State<LoginPageMobile > {
 
                     Container(
                       child: new Form(
-                        key: formKey,
+                        key: _formKey,
                         child: new Column(
                           children: <Widget>[
 //                      new TextFormField(
@@ -836,10 +892,7 @@ class _LandingPageState1 extends State<LoginPageMobile > {
                                   shape: RoundedRectangleBorder(
                                       borderRadius:
                                       BorderRadius.all(Radius.circular(20.0))),
-                                  onPressed: (){
-                                    _submit();
-                                  },
-
+                               onPressed: validateAndSubmit,
 
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -982,125 +1035,125 @@ class _LandingPageState1 extends State<LoginPageMobile > {
                                       ),
                                     ],
                                   ),
-                                  Column(
-                                    children: <Widget>[
-                                      Stack(
-                                        children: <Widget>[
-
-                                          MaterialButton(
-                                            color: Colors.blueAccent,
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                BorderRadius.all(Radius.circular(20.0))),
-                                            onPressed: (){
-
-                                            },
-                                            child: ClipOval(
-
-                                              child: Padding(
-                                                padding: const EdgeInsets.symmetric(
-                                                    vertical: 12.0, horizontal: 8.0),
-
-                                                child: Padding(
-                                                  padding: const EdgeInsets.only(left: 20),
-                                                  child: Text(
-                                                    "Twitter",
-                                                    style: TextStyle(color: Colors.white),
-                                                  ),
-                                                ),
-                                              ),
-
-                                            ),
-
-                                          ),
-                                          Positioned(
-                                            top: 5,
-                                            child: CircleAvatar(
-                                              radius: 19,
-
-                                              backgroundColor: Colors.blue,
-                                              child: ClipOval(
-                                                child: Container(
-
-                                                  child:
-                                                  IconButton(
-                                                    onPressed: () {},
-                                                    icon: Icon(
-                                                      CommunityMaterialIcons.twitter, color: Colors.white,), iconSize: 20,
-                                                    tooltip: 'Twitter',
-                                                  ),),
-
-                                              ),
-
-                                            ),
-                                          ),
-
-
-
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+//                                  Column(
+//                                    children: <Widget>[
+//                                      Stack(
+//                                        children: <Widget>[
+//
+//                                          MaterialButton(
+//                                            color: Colors.blueAccent,
+//                                            shape: RoundedRectangleBorder(
+//                                                borderRadius:
+//                                                BorderRadius.all(Radius.circular(20.0))),
+//                                            onPressed: (){
+//
+//                                            },
+//                                            child: ClipOval(
+//
+//                                              child: Padding(
+//                                                padding: const EdgeInsets.symmetric(
+//                                                    vertical: 12.0, horizontal: 8.0),
+//
+//                                                child: Padding(
+//                                                  padding: const EdgeInsets.only(left: 20),
+//                                                  child: Text(
+//                                                    "Twitter",
+//                                                    style: TextStyle(color: Colors.white),
+//                                                  ),
+//                                                ),
+//                                              ),
+//
+//                                            ),
+//
+//                                          ),
+//                                          Positioned(
+//                                            top: 5,
+//                                            child: CircleAvatar(
+//                                              radius: 19,
+//
+//                                              backgroundColor: Colors.blue,
+//                                              child: ClipOval(
+//                                                child: Container(
+//
+//                                                  child:
+//                                                  IconButton(
+//                                                    onPressed: () {},
+//                                                    icon: Icon(
+//                                                      CommunityMaterialIcons.twitter, color: Colors.white,), iconSize: 20,
+//                                                    tooltip: 'Twitter',
+//                                                  ),),
+//
+//                                              ),
+//
+//                                            ),
+//                                          ),
+//
+//
+//
+//                                        ],
+//                                      ),
+//                                    ],
+//                                  ),
 
                                 ],),
 
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-
-                                Stack(
-                                  children: <Widget>[
-
-                                    MaterialButton(
-                                      color: Colors.redAccent,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                          BorderRadius.all(Radius.circular(20.0))),
-                                      onPressed: (){
-
-                                      },
-                                      child: ClipOval(
-
-
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 12.0, horizontal: 25.0),
-
-                                          child: Text(
-                                            "Google",
-                                            style: TextStyle(color: Colors.white),
-                                          ),
-                                        ),
-
-                                      ),
-
-                                    ),
-                                    Positioned(
-                                      top: 5,
-                                      child: CircleAvatar(
-                                        radius: 19,
-                                        backgroundColor: Colors.red,
-                                        child: ClipOval(
-                                          child: Container(
-                                            child:
-                                            IconButton(
-                                              onPressed: () {},
-                                              icon: Icon(
-                                                CommunityMaterialIcons.google, color: Colors.white,), iconSize: 15,
-                                              tooltip: 'Google',
-                                            ),
-                                          ),
-
-                                        ),
-
-                                      ),
-                                    ),
-
-                                  ],
-                                ),
-                              ],
-                            ),
+//                            Row(
+//                              mainAxisAlignment: MainAxisAlignment.center,
+//                              children: <Widget>[
+//
+//                                Stack(
+//                                  children: <Widget>[
+//
+//                                    MaterialButton(
+//                                      color: Colors.redAccent,
+//                                      shape: RoundedRectangleBorder(
+//                                          borderRadius:
+//                                          BorderRadius.all(Radius.circular(20.0))),
+//                                      onPressed: (){
+//
+//                                      },
+//                                      child: ClipOval(
+//
+//
+//                                        child: Padding(
+//                                          padding: const EdgeInsets.symmetric(
+//                                              vertical: 12.0, horizontal: 25.0),
+//
+//                                          child: Text(
+//                                            "Google",
+//                                            style: TextStyle(color: Colors.white),
+//                                          ),
+//                                        ),
+//
+//                                      ),
+//
+//                                    ),
+//                                    Positioned(
+//                                      top: 5,
+//                                      child: CircleAvatar(
+//                                        radius: 19,
+//                                        backgroundColor: Colors.red,
+//                                        child: ClipOval(
+//                                          child: Container(
+//                                            child:
+//                                            IconButton(
+//                                              onPressed: () {},
+//                                              icon: Icon(
+//                                                CommunityMaterialIcons.google, color: Colors.white,), iconSize: 15,
+//                                              tooltip: 'Google',
+//                                            ),
+//                                          ),
+//
+//                                        ),
+//
+//                                      ),
+//                                    ),
+//
+//                                  ],
+//                                ),
+//                              ],
+//                            ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
 

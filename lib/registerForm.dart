@@ -5,6 +5,8 @@ import 'loginForm.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
 class RegisterForm extends StatefulWidget {
   @override
   _ComingSoonPageState createState() => _ComingSoonPageState();
@@ -165,14 +167,17 @@ class _LandingPageState extends State<RePage > {
     final form = formKey.currentState;
     emailTextControler.clear();
     _firestore.collection(' Registerd Students').add({
-      'user_email': emailText,
-      'user_password': _password,
+      'email': emailText,
+      'password': _password,
       'user_name': username,
       'user_cnic':_cnic,
       'user_center_name':_cname,
       'user_batch_no':_bno,
 
-    });
+    }
+
+
+    );
 
     setState(() {
       _isAddingEmail = false;
@@ -699,57 +704,57 @@ class _LandingPageState extends State<RePage > {
 //
 //                                  ],
 //                                ),
-                                SizedBox(width: 3,),
-                                Stack(
-                                  children: <Widget>[
-
-                                    MaterialButton(
-                                      color: Colors.redAccent,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                          BorderRadius.all(Radius.circular(20.0))),
-                                      onPressed: (){
-
-                                      },
-                                      child: ClipOval(
-
-
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 12.0, horizontal: 22.0),
-
-                                          child: Text(
-                                            "Google",
-                                            style: TextStyle(color: Colors.white,fontSize: 12),
-                                          ),
-                                        ),
-
-                                      ),
-
-                                    ),
-                                    Positioned(
-                                      top: 5,
-                                      child: CircleAvatar(
-                                        radius: 19,
-                                        backgroundColor: Colors.red,
-                                        child: ClipOval(
-                                          child: Container(
-                                            child:
-                                            IconButton(
-                                              onPressed: () {},
-                                              icon: Icon(
-                                                CommunityMaterialIcons.google, color: Colors.white,), iconSize: 15,
-                                              tooltip: 'Google',
-                                            ),
-                                          ),
-
-                                        ),
-
-                                      ),
-                                    ),
-
-                                  ],
-                                ),
+//                                SizedBox(width: 3,),
+//                                Stack(
+//                                  children: <Widget>[
+//
+//                                    MaterialButton(
+//                                      color: Colors.redAccent,
+//                                      shape: RoundedRectangleBorder(
+//                                          borderRadius:
+//                                          BorderRadius.all(Radius.circular(20.0))),
+//                                      onPressed: (){
+//
+//                                      },
+//                                      child: ClipOval(
+//
+//
+//                                        child: Padding(
+//                                          padding: const EdgeInsets.symmetric(
+//                                              vertical: 12.0, horizontal: 22.0),
+//
+//                                          child: Text(
+//                                            "Google",
+//                                            style: TextStyle(color: Colors.white,fontSize: 12),
+//                                          ),
+//                                        ),
+//
+//                                      ),
+//
+//                                    ),
+//                                    Positioned(
+//                                      top: 5,
+//                                      child: CircleAvatar(
+//                                        radius: 19,
+//                                        backgroundColor: Colors.red,
+//                                        child: ClipOval(
+//                                          child: Container(
+//                                            child:
+//                                            IconButton(
+//                                              onPressed: () {},
+//                                              icon: Icon(
+//                                                CommunityMaterialIcons.google, color: Colors.white,), iconSize: 15,
+//                                              tooltip: 'Google',
+//                                            ),
+//                                          ),
+//
+//                                        ),
+//
+//                                      ),
+//                                    ),
+//
+//                                  ],
+//                                ),
                               ],),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -1464,60 +1469,60 @@ class _LandingPageState1 extends State<RePageMobile1 > {
 //                                ),
 
                               ],),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                              Stack(
-                                children: <Widget>[
-
-                                  MaterialButton(
-                                    color: Colors.redAccent,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                        BorderRadius.all(Radius.circular(20.0))),
-                                    onPressed: (){
-
-                                    },
-                                    child: ClipOval(
-
-
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 12.0, horizontal: 25.0),
-
-                                        child: Text(
-                                          "Google",
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ),
-
-                                    ),
-
-                                  ),
-                                  Positioned(
-                                    top: 5,
-                                    child: CircleAvatar(
-                                      radius: 19,
-                                      backgroundColor: Colors.red,
-                                      child: ClipOval(
-                                        child: Container(
-                                          child:
-                                          IconButton(
-                                            onPressed: () {},
-                                            icon: Icon(
-                                              CommunityMaterialIcons.google, color: Colors.white,), iconSize: 15,
-                                            tooltip: 'Google',
-                                          ),
-                                        ),
-
-                                      ),
-
-                                    ),
-                                  ),
-
-                                ],
-                              ),
-                            ],),
+//                            Row(
+//                              mainAxisAlignment: MainAxisAlignment.center,
+//                              children: <Widget>[
+//                              Stack(
+//                                children: <Widget>[
+//
+//                                  MaterialButton(
+//                                    color: Colors.redAccent,
+//                                    shape: RoundedRectangleBorder(
+//                                        borderRadius:
+//                                        BorderRadius.all(Radius.circular(20.0))),
+//                                    onPressed: (){
+//
+//                                    },
+//                                    child: ClipOval(
+//
+//
+//                                      child: Padding(
+//                                        padding: const EdgeInsets.symmetric(
+//                                            vertical: 12.0, horizontal: 25.0),
+//
+//                                        child: Text(
+//                                          "Google",
+//                                          style: TextStyle(color: Colors.white),
+//                                        ),
+//                                      ),
+//
+//                                    ),
+//
+//                                  ),
+//                                  Positioned(
+//                                    top: 5,
+//                                    child: CircleAvatar(
+//                                      radius: 19,
+//                                      backgroundColor: Colors.red,
+//                                      child: ClipOval(
+//                                        child: Container(
+//                                          child:
+//                                          IconButton(
+//                                            onPressed: () {},
+//                                            icon: Icon(
+//                                              CommunityMaterialIcons.google, color: Colors.white,), iconSize: 15,
+//                                            tooltip: 'Google',
+//                                          ),
+//                                        ),
+//
+//                                      ),
+//
+//                                    ),
+//                                  ),
+//
+//                                ],
+//                              ),
+//                            ],),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
 
